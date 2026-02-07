@@ -976,6 +976,21 @@
         </div>
     </div>
 
+    <div class="modal" id="initialBalanceModal">
+        <div class="modal-content">
+            <h3 class="modal-title">💰 Kapitał początkowy</h3>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1rem;">
+                Ile pieniędzy masz na start?
+            </p>
+            <div class="form-group">
+                <input type="number" id="initialBalanceInput" placeholder="np. 5000" step="0.01" autofocus>
+            </div>
+            <button class="btn btn-primary" onclick="setInitialBalance()" style="width: 100%;">
+                Rozpocznij
+            </button>
+        </div>
+    </div>
+
     <div class="modal" id="clearModal">
         <div class="modal-content">
             <h3 class="modal-title">Wyczyścić historię?</h3>
@@ -1536,19 +1551,54 @@
         }
 
         function clearAllTransactions() {
-            currentBalance = 5000;
-            initialBalance = 5000;
+            // Show initial balance modal again
+            document.getElementById('initialBalanceModal').classList.add('active');
+            closeClearModal();
+            
+            // Clear data
             transactions = [];
+            monthlyStartingBalances = {};
             currentMonth = 'all';
             updateMonthFilter();
-            updateUI();
-            saveData();
-            closeClearModal();
+            
+            // Wait for user to set new balance
+            // The setInitialBalance function will handle saving
         }
 
         // Initialize app
         loadData();
         updateMonthFilter();
+        
+        // Check if first time user
+        function checkFirstTimeUser() {
+            const savedData = localStorage.getItem('budgetTrackerData');
+            if (!savedData) {
+                // First time user - show initial balance modal
+                document.getElementById('initialBalanceModal').classList.add('active');
+            }
+        }
+        
+        function setInitialBalance() {
+            const amount = parseFloat(document.getElementById('initialBalanceInput').value);
+            
+            if (!amount || amount < 0) {
+                alert('Podaj prawidłową kwotę!');
+                return;
+            }
+            
+            currentBalance = amount;
+            initialBalance = amount;
+            
+            // Save initial data
+            saveData();
+            updateUI();
+            
+            // Close modal
+            document.getElementById('initialBalanceModal').classList.remove('active');
+        }
+        
+        // Run on page load
+        checkFirstTimeUser();
 
         // Budget and limits functions
         function checkBudgetWarnings() {
